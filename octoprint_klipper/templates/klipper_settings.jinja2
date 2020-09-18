@@ -23,7 +23,13 @@
     <div class="control-group">
         <label class="control-label">{{ _('Klipper Config Path') }}</label>
         <div class="controls">
-            <input type="text" class="input-block-level" data-bind="value: settings.settings.plugins.klipper.configuration.path">
+            <input type="text" class="input-block-level" data-bind="value: settings.settings.plugins.klipper.configuration.configpath">
+        </div>
+    </div>
+    <div class="control-group">
+        <label class="control-label">{{ _('Klipper Log Path') }}</label>
+        <div class="controls">
+            <input type="text" class="input-block-level" data-bind="value: settings.settings.plugins.klipper.configuration.logpath">
         </div>
     </div>
     <div class="control-group">

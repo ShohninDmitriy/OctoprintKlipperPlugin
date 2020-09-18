@@ -1,11 +1,18 @@
-# coding=utf-8
-# OctoPrint Klipper Plugin
-#
-# Copyright (C) 2018  Martin Muehlhaeuser <github@mmone.de>
-#
-# This file may be distributed under the terms of the GNU GPLv3 license.
+# <Octoprint Klipper Plugin>
 
-from __future__ import absolute_import
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Affero General Public License as
+# published by the Free Software Foundation, either version 3 of the
+# License, or (at your option) any later version.
+
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Affero General Public License for more details.
+
+# You should have received a copy of the GNU Affero General Public License
+# along with this program.  If not, see <https://www.gnu.org/licenses/>.
+
 import datetime
 import logging
 import octoprint.plugin
@@ -23,12 +30,12 @@ class KlipperPlugin(
       octoprint.plugin.AssetPlugin,
       octoprint.plugin.SimpleApiPlugin,
       octoprint.plugin.EventHandlerPlugin):
-   
+
    _parsing_response = False
    _message = ""
 
    #-- Startup Plugin
-   
+
    def on_after_startup(self):
       klipper_port = self._settings.get(["connection", "port"])
       additional_ports = self._settings.global_get(["serial", "additionalPorts"])
@@ -65,16 +72,17 @@ class KlipperPlugin(
             )]
          ),
          configuration = dict(
-            path="~/printer.cfg",
+            configpath="~/printer.cfg",
+            logpath="/tmp/klippy.log",
             reload_command="RESTART"
          )
       )
-   
+
    def on_settings_load(self):
       data = octoprint.plugin.SettingsPlugin.on_settings_load(self)
-      
+
       filepath = os.path.expanduser(
-         self._settings.get(["configuration", "path"])
+         self._settings.get(["configuration", "configpath"])
       )
       try:
          f = open(filepath, "r")
@@ -90,11 +98,9 @@ class KlipperPlugin(
       if "config" in data:
          try:
             filepath = os.path.expanduser(
-               self._settings.get(["configuration", "path"])
+               self._settings.get(["configuration", "configpath"])
             )
-            # Check for Unicode config file and convert to String, if so.
-            if type(data["config"]) == unicode:
-               data["config"] = data["config"].encode('utf-8')
+            data["config"] = data["config"].encode('utf-8')
 
             f = open(filepath, "w")
             f.write(data["config"])
@@ -117,7 +123,7 @@ class KlipperPlugin(
       return dict(
          admin=[
             ["connection", "port"],
-            ["configuration", "path"],
+            ["configuration", "configpath"],
             ["configuration", "replace_connection_panel"]
          ],
          user=[
@@ -132,7 +138,7 @@ class KlipperPlugin(
    def on_settings_migrate(self, target, current):
       if current is None:
          settings = self._settings
-         
+
          if settings.has(["serialport"]):
             settings.set(["connection", "port"], settings.get(["serialport"]) )
             settings.remove(["serialport"])
@@ -147,19 +153,19 @@ class KlipperPlugin(
          if settings.has(["probeHeight"]):
             settings.set(["probe", "height"], settings.get(["probeHeight"]))
             settings.remove(["probeHeight"])
-         
+
          if settings.has(["probeLift"]):
             settings.set(["probe", "lift"], settings.get(["probeLift"]))
             settings.remove(["probeLift"])
-         
+
          if settings.has(["probeSpeedXy"]):
             settings.set(["probe", "speed_xy"], settings.get(["probeSpeedXy"]))
             settings.remove(["probeSpeedXy"])
-         
+
          if settings.has(["probeSpeedZ"]):
             settings.set(["probe", "speed_z"], settings.get(["probeSpeedZ"]))
             settings.remove(["probeSpeedZ"])
-            
+
          if settings.has(["probePoints"]):
             points = settings.get(["probePoints"])
             points_new = []
@@ -171,7 +177,7 @@ class KlipperPlugin(
          if settings.has(["configPath"]):
             settings.set(["config_path"], settings.get(["configPath"]))
             settings.remove(["configPath"])
-         
+
    #-- Template Plugin
 
    def get_template_configs(self):
@@ -221,9 +227,9 @@ class KlipperPlugin(
             custom_bindings=True
          )
       ]
-   
+
    #-- Asset Plugin
-   
+
    def get_assets(self):
       return dict(
          js=["js/klipper.js",
@@ -237,23 +243,25 @@ class KlipperPlugin(
          css=["css/klipper.css"],
          less=["css/klipper.less"]
       )
-   
+
    #-- Event Handler Plugin
-   
+
    def on_event(self, event, payload):
+       if "UserLoggedIn" == event:
+           self.updateStatus("info","Klipper: Standby")
        if "Connecting" == event:
-           self.updateStatus("info", "Connecting ...")
+           self.updateStatus("info", "Klipper: Connecting ...")
        elif "Connected" == event:
-           self.updateStatus("info", "Connected to host")
+           self.updateStatus("info", "Klipper: Connected to host")
            self.logInfo("Connected to host via {} @{}bps".format(payload["port"], payload["baudrate"]))
        elif "Disconnected" == event:
-           self.updateStatus("info", "Disconnected from host")
+           self.updateStatus("info", "Klipper: Disconnected from host")
        elif "Error" == event:
-           self.updateStatus("error", "Error")
+           self.updateStatus("error", "Klipper: Error")
            self.logError(payload["error"])
-           
+
    #-- GCODE Hook
-   
+
    def on_parse_gcode(self, comm, line, *args, **kwargs):
       if "FIRMWARE_VERSION" in line:
          printerInfo = parse_firmware_line(line)
@@ -281,11 +289,11 @@ class KlipperPlugin(
          getStats=["logFile"],
          loadConfig=["configFile"]
       )
-      
+
    def on_api_command(self, command, data):
       if command == "listLogFiles":
          files = []
-         for f in glob.glob("/tmp/*.log*"):
+         for f in glob.glob(self._settings.get(["configuration", "logpath"]) + "*"):
             filesize = os.path.getsize(f)
             files.append(dict(
                name=os.path.basename(f) + " ({:.1f} KB)".format(filesize / 1000.0),
@@ -314,7 +322,7 @@ class KlipperPlugin(
             pip="https://github.com/ShohninDmitriy/OctoprintKlipperPlugin/archive/{target_version}.zip"
          )
       )
-    
+
    #-- Helpers
    def sendMessage(self, type, subtype, payload):
       self._plugin_manager.send_plugin_message(
@@ -326,23 +334,25 @@ class KlipperPlugin(
             payload=payload
          )
       )
-   
+
    def pollStatus(self):
       self._printer.commands("STATUS")
 
    def updateStatus(self, type, status):
       self.sendMessage("status", type, status)
-   
+
    def logInfo(self, message):
       self.sendMessage("log", "info", message)
 
    def logError(self, error):
       self.sendMessage("log", "error", error)
 
+__plugin_name__ = "OctoKlipper"
+__plugin_pythoncompat__ = ">=2.7,<4"
+
 def __plugin_load__():
    global __plugin_implementation__
    global __plugin_hooks__
-
    __plugin_implementation__ = KlipperPlugin()
    __plugin_hooks__ = {
       "octoprint.comm.protocol.gcode.received": __plugin_implementation__.on_parse_gcode,

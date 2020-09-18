@@ -1,4 +1,17 @@
-# Copyright (C) 2016-2018  Kevin O'Connor <kevin@koconnor.net>
+# <Octoprint Klipper Plugin>
+
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Affero General Public License as
+# published by the Free Software Foundation, either version 3 of the
+# License, or (at your option) any later version.
+ 
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Affero General Public License for more details.
+ 
+# You should have received a copy of the GNU Affero General Public License
+# along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import flask
 import optparse, datetime
@@ -10,7 +23,7 @@ class KlipperLogAnalyzer():
    TASK_MAX=0.0025
    APPLY_PREFIX = ['mcu_awake', 'mcu_task_avg', 'mcu_task_stddev', 'bytes_write',
                    'bytes_read', 'bytes_retransmit', 'freq', 'adj']
-                   
+
    def __init__(self, log_file):
       self.log_file = log_file
 
@@ -28,10 +41,10 @@ class KlipperLogAnalyzer():
       mcu_prefix = mcu + ":"
       apply_prefix = { p: 1 for p in self.APPLY_PREFIX }
       out = []
-      
+
       try:
          f = open(logname, 'rb')
-      
+
          for line in f:
             parts = line.split()
             if not parts or parts[0] not in ('Stats', 'INFO:root:Stats'):
@@ -83,7 +96,7 @@ class KlipperLogAnalyzer():
             if last_runoff_start:
                runoff_samples[last_runoff_start][0] = True
          last_print_stall = print_stall
-      sample_resets = {sampletime: 1 for stall, samples in runoff_samples.values()
+      sample_resets = {sampletime: 1 for stall, samples in list(runoff_samples.values())
                         for sampletime in samples if not stall}
       return sample_resets
 
@@ -122,7 +135,7 @@ class KlipperLogAnalyzer():
          awake.append(100. * float(d.get('mcu_awake', 0.)) / self.STATS_INTERVAL)
          lasttime = st
          lastbw = bw
-      
+
       result = dict(
          times= times,
          bwdeltas= bwdeltas,
@@ -131,7 +144,7 @@ class KlipperLogAnalyzer():
          buffers= hostbuffers
       )
       return result
-      
+
    def plot_frequency(self, data, mcu):
       all_keys = {}
       for d in data:
@@ -143,10 +156,10 @@ class KlipperLogAnalyzer():
       basetime = lasttime = data[0]['#sampletime']
       for d in data:
          st = d['#sampletime']
-         for key, (times, values) in graph_keys.items():
+         for key, (times, values) in list(graph_keys.items()):
             val = d.get(key)
             if val not in (None, '0', '1'):
                times.append(st)
                values.append(float(val)/1000000.0)
-               
+
       return values

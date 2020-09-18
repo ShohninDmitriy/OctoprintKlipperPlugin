@@ -1,4 +1,17 @@
-# coding=utf-8
+# <Octoprint Klipper Plugin>
+
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Affero General Public License as
+# published by the Free Software Foundation, either version 3 of the
+# License, or (at your option) any later version.
+
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Affero General Public License for more details.
+
+# You should have received a copy of the GNU Affero General Public License
+# along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 plugin_identifier = "klipper"
 
@@ -6,13 +19,13 @@ plugin_package = "octoprint_klipper"
 
 plugin_name = "OctoKlipper"
 
-plugin_version = "0.2.5.1"
+plugin_version = "0.3.1"
 
 plugin_description = """A plugin for OctoPrint to configure,control and monitor the Klipper 3D printer software."""
 
-plugin_author = "Martin Muehlhaeuser"
+plugin_author = "Alice Weigt"
 
-plugin_author_email = "github@mmone.de"
+plugin_author_email = "alice@grey.systems"
 
 plugin_url = "https://github.com/ShohninDmitriy/OctoprintKlipperPlugin"
 
