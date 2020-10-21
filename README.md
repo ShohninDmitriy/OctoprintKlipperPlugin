@@ -1,7 +1,7 @@
 ## Fork information:
 - This is forked from [the original](https://github.com/mmone/OctoprintKlipperPlugin) version 0.2.5
 - The fork now supports Python3 (hopefully without any new bugs)
-- The current version is 0.3.1 and includes the pull requests left on the old plugin page that fixes several bugs and Themify support.
+- The current version is 0.3.2 and includes the pull requests left on the old plugin page that fixes several bugs and Themify support.
 
 ## Fork Installation Information:
 - Uninstall any other versions of the plugin using Plugin Manager or other means, as necessary.

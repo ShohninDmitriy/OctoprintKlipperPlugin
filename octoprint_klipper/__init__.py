@@ -19,6 +19,7 @@ import octoprint.plugin
 import octoprint.plugin.core
 import glob
 import os
+import sys
 from octoprint.util.comm import parse_firmware_line
 from .modules import KlipperLogAnalyzer
 import flask
@@ -100,7 +101,8 @@ class KlipperPlugin(
             filepath = os.path.expanduser(
                self._settings.get(["configuration", "configpath"])
             )
-            data["config"] = data["config"].encode('utf-8')
+            if sys.version_info[0] < 3:
+                data["config"] = data["config"].encode('utf-8')
 
             f = open(filepath, "w")
             f.write(data["config"])
